@@ -1,0 +1,131 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["referentialIntegrity"]
+}
+
+datasource db {
+  provider             = "mysql"
+  url                  = env("DATABASE_URL")
+  referentialIntegrity = "prisma"
+}
+
+generator dbml {
+  provider = "prisma-dbml-generator"
+}
+
+model User {
+  id       Int    @id @default(autoincrement())
+  uuid     String @unique @default(uuid()) @db.Char(40)
+  name     String @db.Char(50)
+  whatsapp String @db.Char(13)
+  password String
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime? @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  @@map("users")
+}
+
+model Student {
+  id            Int            @id @default(autoincrement())
+  uuid          String         @unique @default(uuid()) @db.Char(40)
+  name          String         @db.Char(50)
+  whatsapp      String         @db.Char(13)
+  bornDate      DateTime       @map("born_date") @db.Date
+  createdAt     DateTime       @default(now()) @map("created_at")
+  updatedAt     DateTime?      @map("updated_at")
+  verifiedAt    DateTime?      @map("verified_at")
+  deletedAt     DateTime?      @map("deleted_at")
+  //
+  subscriptions Subscription[]
+  notifications Notification[]
+
+  @@map("students")
+}
+
+enum SubscriptionDropReason {
+  RequestLock        @map("request_lock")
+  RequestCancelation @map("request_cancelation")
+  Abandoned          @map("abandoned")
+
+  @@map("subscription_drop_reason")
+}
+
+model Subscription {
+  id         Int                     @id @default(autoincrement())
+  uuid       String                  @unique @default(uuid())
+  isActive   Boolean                 @default(true) @map("is_active")
+  dropReason SubscriptionDropReason? @map("drop_reason")
+  createdAt  DateTime                @default(now()) @map("created_at")
+  updatedAt  DateTime?               @map("updated_at")
+
+  //
+  studentId Int     @map("student_id")
+  student   Student @relation(fields: [studentId], references: [id])
+
+  groupId Int   @map("group_id")
+  group   Group @relation(fields: [groupId], references: [id])
+
+  @@map("subscriptions")
+}
+
+enum GroupModality {
+  remote
+  presential
+
+  @@map("group_modality")
+}
+
+model Group {
+  id            Int            @id @default(autoincrement())
+  uuid          String         @unique @default(uuid())
+  name          String
+  weekDay       Int?           @map("week_day")
+  startDate     DateTime?      @map("start_date") @db.Date
+  startTime     DateTime?      @map("start_time") @db.Time
+  whatsappHash  String?        @map("whatsapp_hash") @db.Char(20)
+  modality      GroupModality?
+  teacher       String?
+  isActive      Boolean        @map("is_active")
+  createdAt     DateTime       @default(now()) @map("created_at")
+  updatedAt     DateTime?      @map("updated_at")
+  deletedAt     DateTime?      @map("deleted_at")
+  //
+  subscriptions Subscription[]
+  subject       Subject?       @relation(fields: [subjectId], references: [id])
+  subjectId     Int?           @map("subject_id")
+
+  @@map("groups")
+}
+
+model Subject {
+  id        Int       @id @default(autoincrement())
+  uuid      String    @unique @default(uuid())
+  name      String
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime? @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+  //
+  groups    Group[]
+
+  @@map("subjects")
+}
+
+model Notification {
+  id      Int    @id @default(autoincrement())
+  event   String
+  message String
+
+  attempts  Int       @default(0)
+  sendedAt  DateTime? @map("sended_at")
+  //
+  createdAt DateTime  @default(now()) @map("created_at")
+  failedAt  DateTime? @map("failed_at")
+
+  //
+  studentId Int     @map("student_id")
+  student   Student @relation(fields: [studentId], references: [id])
+
+  @@map("notifications")
+}

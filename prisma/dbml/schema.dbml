@@ -1,0 +1,101 @@
+//// ------------------------------------------------------
+//// THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+//// ------------------------------------------------------
+
+Table users {
+  id Int [pk, increment]
+  uuid String [unique, not null]
+  name String [not null]
+  whatsapp String [not null]
+  password String [not null]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime
+  deletedAt DateTime
+}
+
+Table students {
+  id Int [pk, increment]
+  uuid String [unique, not null]
+  name String [not null]
+  whatsapp String [not null]
+  bornDate DateTime [not null]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime
+  verifiedAt DateTime
+  deletedAt DateTime
+  subscriptions subscriptions [not null]
+  notifications notifications [not null]
+}
+
+Table subscriptions {
+  id Int [pk, increment]
+  uuid String [unique, not null]
+  isActive Boolean [not null, default: true]
+  dropReason SubscriptionDropReason
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime
+  studentId Int [not null]
+  student students [not null]
+  groupId Int [not null]
+  group groups [not null]
+}
+
+Table groups {
+  id Int [pk, increment]
+  uuid String [unique, not null]
+  name String [not null]
+  weekDay Int
+  startDate DateTime
+  startTime DateTime
+  whatsappHash String
+  modality GroupModality
+  teacher String
+  isActive Boolean [not null]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime
+  deletedAt DateTime
+  subscriptions subscriptions [not null]
+  subject subjects
+  subjectId Int
+}
+
+Table subjects {
+  id Int [pk, increment]
+  uuid String [unique, not null]
+  name String [not null]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime
+  deletedAt DateTime
+  groups groups [not null]
+}
+
+Table notifications {
+  id Int [pk, increment]
+  event String [not null]
+  message String [not null]
+  attempts Int [not null, default: 0]
+  sendedAt DateTime
+  createdAt DateTime [default: `now()`, not null]
+  failedAt DateTime
+  studentId Int [not null]
+  student students [not null]
+}
+
+Enum SubscriptionDropReason {
+  RequestLock
+  RequestCancelation
+  Abandoned
+}
+
+Enum GroupModality {
+  remote
+  presential
+}
+
+Ref: subscriptions.studentId > students.id
+
+Ref: subscriptions.groupId > groups.id
+
+Ref: groups.subjectId > subjects.id
+
+Ref: notifications.studentId > students.id

@@ -1,0 +1,26 @@
+version: '3.8'
+services:
+  database:
+    platform: linux/x86_64
+    image: mysql:8
+    environment:
+      MYSQL_ROOT_PASSWORD: 12345
+      MYSQL_MULTIPLE_DATABASE: ${DB_DATABASE},${DB_DATABASE}_test
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+    command: mysqld --sql_mode="" --character-set-server=utf8 --collation-server=utf8_slovenian_ci --init-connect='SET NAMES UTF8;' --innodb-flush-log-at-trx-commit=0
+    volumes:
+      - 'data:/var/lib/mysql'
+      - './init:/docker-entrypoint-initdb.d'
+
+    ports:
+      - '3306:3306'
+    networks:
+      - proxy
+
+volumes:
+  data:
+
+networks:
+  proxy:
+    driver: bridge
